@@ -1,0 +1,7 @@
+{
+  "name": "ds_sql_erp_order_lines",
+  "properties": {
+    "linkedService": "ls_sql_erp",
+    "table": "dbo.order_lines"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "ls_adls_contosolake",
+  "properties": {
+    "type": "AzureBlobFS",
+    "url": "https://contosolake.dfs.core.windows.net",
+    "auth": "Factory managed identity"
+  }
+}

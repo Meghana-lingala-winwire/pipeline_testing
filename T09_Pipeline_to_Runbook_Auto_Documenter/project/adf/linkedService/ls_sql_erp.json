@@ -1,0 +1,10 @@
+{
+  "name": "ls_sql_erp",
+  "properties": {
+    "type": "SqlServer",
+    "connectVia": "shir-contoso-onprem",
+    "auth": "SQL auth, password from Key Vault secret 'erp-sql-password'",
+    "server": "erp-sql01.contoso.local",
+    "database": "ERP"
+  }
+}

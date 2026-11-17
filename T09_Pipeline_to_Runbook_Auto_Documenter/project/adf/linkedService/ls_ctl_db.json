@@ -1,0 +1,8 @@
+{
+  "name": "ls_ctl_db",
+  "properties": {
+    "type": "AzureSqlDatabase",
+    "database": "ctl",
+    "auth": "Factory managed identity"
+  }
+}

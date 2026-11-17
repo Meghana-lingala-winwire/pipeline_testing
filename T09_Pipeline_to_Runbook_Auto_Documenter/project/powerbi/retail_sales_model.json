@@ -1,0 +1,20 @@
+{
+  "semantic_model": "Retail Sales",
+  "workspace": "ws-retail-prod",
+  "tables": [
+    {
+      "name": "fact_sales",
+      "source": "gold.fact_sales"
+    },
+    {
+      "name": "customer_360",
+      "source": "gold.customer_360"
+    }
+  ],
+  "pages": [
+    "Sales Overview",
+    "Channel Mix",
+    "Customer 360"
+  ],
+  "refresh": "triggered by pl_master_daily (Refresh_PowerBI)"
+}

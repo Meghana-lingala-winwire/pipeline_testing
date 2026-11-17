@@ -1,0 +1,161 @@
+{
+  "name": "pl_ingest_erp",
+  "properties": {
+    "parameters": {
+      "load_date": {
+        "type": "string"
+      }
+    },
+    "activities": [
+      {
+        "name": "Lookup_Watermark",
+        "type": "Lookup",
+        "typeProperties": {
+          "source": {
+            "type": "AzureSqlSource",
+            "sqlReaderQuery": "SELECT last_modified FROM ctl.watermark WHERE source = 'erp.orders'"
+          },
+          "dataset": {
+            "referenceName": "ds_ctl_watermark",
+            "type": "DatasetReference"
+          }
+        }
+      },
+      {
+        "name": "Copy_ERP_Orders",
+        "type": "Copy",
+        "policy": {
+          "timeout": "0.01:00:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 600,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "inputs": [
+          {
+            "referenceName": "ds_sql_erp_orders",
+            "type": "DatasetReference"
+          }
+        ],
+        "outputs": [
+          {
+            "referenceName": "ds_adls_bronze_erp_orders",
+            "type": "DatasetReference"
+          }
+        ],
+        "typeProperties": {
+          "source": {
+            "type": "SqlServerSource"
+          },
+          "sink": {
+            "type": "ParquetSink"
+          }
+        },
+        "dependsOn": [
+          {
+            "activity": "Lookup_Watermark",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Copy_ERP_OrderLines",
+        "type": "Copy",
+        "policy": {
+          "timeout": "0.02:00:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 600,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "inputs": [
+          {
+            "referenceName": "ds_sql_erp_order_lines",
+            "type": "DatasetReference"
+          }
+        ],
+        "outputs": [
+          {
+            "referenceName": "ds_adls_bronze_erp_order_lines",
+            "type": "DatasetReference"
+          }
+        ],
+        "typeProperties": {
+          "source": {
+            "type": "SqlServerSource"
+          },
+          "sink": {
+            "type": "ParquetSink"
+          }
+        },
+        "dependsOn": [
+          {
+            "activity": "Lookup_Watermark",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Copy_ERP_Products",
+        "type": "Copy",
+        "policy": {
+          "timeout": "0.01:00:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 600,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "inputs": [
+          {
+            "referenceName": "ds_sql_erp_products",
+            "type": "DatasetReference"
+          }
+        ],
+        "outputs": [
+          {
+            "referenceName": "ds_adls_bronze_erp_products",
+            "type": "DatasetReference"
+          }
+        ],
+        "typeProperties": {
+          "source": {
+            "type": "SqlServerSource"
+          },
+          "sink": {
+            "type": "ParquetSink"
+          }
+        }
+      },
+      {
+        "name": "Update_Watermark",
+        "type": "SqlServerStoredProcedure",
+        "dependsOn": [
+          {
+            "activity": "Copy_ERP_Orders",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          },
+          {
+            "activity": "Copy_ERP_OrderLines",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "storedProcedureName": "ctl.usp_update_watermark",
+          "storedProcedureParameters": {
+            "source": {
+              "value": "erp.orders"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

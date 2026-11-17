@@ -1,0 +1,135 @@
+{
+  "name": "pl_transform",
+  "properties": {
+    "parameters": {
+      "load_date": {
+        "type": "string"
+      }
+    },
+    "activities": [
+      {
+        "name": "Silver_Customers",
+        "type": "DatabricksNotebook",
+        "linkedServiceName": {
+          "referenceName": "ls_databricks_jobs",
+          "type": "LinkedServiceReference"
+        },
+        "policy": {
+          "timeout": "0.01:00:00",
+          "retry": 1,
+          "retryIntervalInSeconds": 300
+        },
+        "typeProperties": {
+          "notebookPath": "/Repos/retail/silver/nb_silver_customers",
+          "baseParameters": {
+            "load_date": "@pipeline().parameters.load_date"
+          }
+        }
+      },
+      {
+        "name": "Silver_Orders",
+        "type": "DatabricksNotebook",
+        "linkedServiceName": {
+          "referenceName": "ls_databricks_jobs",
+          "type": "LinkedServiceReference"
+        },
+        "policy": {
+          "timeout": "0.01:00:00",
+          "retry": 1,
+          "retryIntervalInSeconds": 300
+        },
+        "typeProperties": {
+          "notebookPath": "/Repos/retail/silver/nb_silver_orders",
+          "baseParameters": {
+            "load_date": "@pipeline().parameters.load_date"
+          }
+        }
+      },
+      {
+        "name": "Silver_Store_Sales",
+        "type": "DatabricksNotebook",
+        "linkedServiceName": {
+          "referenceName": "ls_databricks_jobs",
+          "type": "LinkedServiceReference"
+        },
+        "policy": {
+          "timeout": "0.01:00:00",
+          "retry": 1,
+          "retryIntervalInSeconds": 300
+        },
+        "typeProperties": {
+          "notebookPath": "/Repos/retail/silver/nb_silver_store_sales",
+          "baseParameters": {
+            "load_date": "@pipeline().parameters.load_date"
+          }
+        }
+      },
+      {
+        "name": "Gold_Fact_Sales",
+        "type": "DatabricksNotebook",
+        "linkedServiceName": {
+          "referenceName": "ls_databricks_jobs",
+          "type": "LinkedServiceReference"
+        },
+        "policy": {
+          "timeout": "0.02:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 300
+        },
+        "typeProperties": {
+          "notebookPath": "/Repos/retail/gold/nb_gold_fact_sales",
+          "baseParameters": {
+            "load_date": "@pipeline().parameters.load_date"
+          }
+        },
+        "dependsOn": [
+          {
+            "activity": "Silver_Orders",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          },
+          {
+            "activity": "Silver_Store_Sales",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Gold_Customer_360",
+        "type": "DatabricksNotebook",
+        "linkedServiceName": {
+          "referenceName": "ls_databricks_jobs",
+          "type": "LinkedServiceReference"
+        },
+        "policy": {
+          "timeout": "0.01:00:00",
+          "retry": 1,
+          "retryIntervalInSeconds": 300
+        },
+        "typeProperties": {
+          "notebookPath": "/Repos/retail/gold/nb_gold_customer_360",
+          "baseParameters": {
+            "load_date": "@pipeline().parameters.load_date"
+          }
+        },
+        "dependsOn": [
+          {
+            "activity": "Silver_Customers",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          },
+          {
+            "activity": "Gold_Fact_Sales",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

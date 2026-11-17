@@ -1,0 +1,7 @@
+{
+  "name": "ds_ctl_watermark",
+  "properties": {
+    "linkedService": "ls_ctl_db",
+    "table": "ctl.watermark"
+  }
+}

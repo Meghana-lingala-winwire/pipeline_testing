@@ -1,0 +1,37 @@
+{
+  "name": "tr_monthly_close",
+  "properties": {
+    "type": "ScheduleTrigger",
+    "runtimeState": "Stopped",
+    "pipelines": [
+      {
+        "pipelineReference": {
+          "referenceName": "pl_transform",
+          "type": "PipelineReference"
+        },
+        "parameters": {
+          "load_date": "@trigger().scheduledTime"
+        }
+      }
+    ],
+    "typeProperties": {
+      "recurrence": {
+        "frequency": "Month",
+        "interval": 1,
+        "startTime": "2025-01-01T05:00:00",
+        "timeZone": "India Standard Time",
+        "schedule": {
+          "monthDays": [
+            1
+          ],
+          "hours": [
+            5
+          ],
+          "minutes": [
+            0
+          ]
+        }
+      }
+    }
+  }
+}

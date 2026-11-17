@@ -1,0 +1,7 @@
+{
+  "name": "ds_adls_landing_store_sales",
+  "properties": {
+    "linkedService": "ls_adls_contosolake",
+    "path": "landing/stores/{load_date}/"
+  }
+}

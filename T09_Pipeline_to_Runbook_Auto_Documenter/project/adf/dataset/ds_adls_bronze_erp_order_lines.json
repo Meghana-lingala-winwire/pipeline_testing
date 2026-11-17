@@ -1,0 +1,7 @@
+{
+  "name": "ds_adls_bronze_erp_order_lines",
+  "properties": {
+    "linkedService": "ls_adls_contosolake",
+    "path": "bronze/erp/order_lines/{load_date}/"
+  }
+}

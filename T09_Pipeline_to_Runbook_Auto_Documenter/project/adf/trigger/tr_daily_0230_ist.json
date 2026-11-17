@@ -1,0 +1,23 @@
+{
+  "name": "tr_daily_0230_ist",
+  "properties": {
+    "type": "ScheduleTrigger",
+    "runtimeState": "Started",
+    "pipelines": [
+      {
+        "pipelineReference": {
+          "referenceName": "pl_master_daily",
+          "type": "PipelineReference"
+        }
+      }
+    ],
+    "typeProperties": {
+      "recurrence": {
+        "frequency": "Day",
+        "interval": 1,
+        "startTime": "2025-01-01T02:30:00",
+        "timeZone": "India Standard Time"
+      }
+    }
+  }
+}

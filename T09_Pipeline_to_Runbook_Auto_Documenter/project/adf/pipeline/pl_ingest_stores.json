@@ -1,0 +1,111 @@
+{
+  "name": "pl_ingest_stores",
+  "properties": {
+    "parameters": {
+      "load_date": {
+        "type": "string"
+      }
+    },
+    "activities": [
+      {
+        "name": "Wait_For_Store_File",
+        "type": "Until",
+        "typeProperties": {
+          "expression": {
+            "value": "@activity('Check_File').output.exists",
+            "type": "Expression"
+          },
+          "timeout": "0.01:30:00",
+          "activities": [
+            {
+              "name": "Check_File",
+              "type": "GetMetadata",
+              "typeProperties": {
+                "dataset": {
+                  "referenceName": "ds_sftp_store_sales",
+                  "type": "DatasetReference"
+                },
+                "fieldList": [
+                  "exists"
+                ]
+              }
+            },
+            {
+              "name": "Wait_10_Min",
+              "type": "Wait",
+              "typeProperties": {
+                "waitTimeInSeconds": 600
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "Copy_Store_Sales",
+        "type": "Copy",
+        "policy": {
+          "timeout": "0.01:00:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 600,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "inputs": [
+          {
+            "referenceName": "ds_sftp_store_sales",
+            "type": "DatasetReference"
+          }
+        ],
+        "outputs": [
+          {
+            "referenceName": "ds_adls_landing_store_sales",
+            "type": "DatasetReference"
+          }
+        ],
+        "typeProperties": {
+          "source": {
+            "type": "SftpReadSettings"
+          },
+          "sink": {
+            "type": "ParquetSink"
+          }
+        },
+        "dependsOn": [
+          {
+            "activity": "Wait_For_Store_File",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Bronze_Store_Sales",
+        "type": "DatabricksNotebook",
+        "linkedServiceName": {
+          "referenceName": "ls_databricks_jobs",
+          "type": "LinkedServiceReference"
+        },
+        "policy": {
+          "timeout": "0.01:00:00",
+          "retry": 1,
+          "retryIntervalInSeconds": 300
+        },
+        "typeProperties": {
+          "notebookPath": "/Repos/retail/bronze/nb_bronze_store_sales",
+          "baseParameters": {
+            "load_date": "@pipeline().parameters.load_date"
+          }
+        },
+        "dependsOn": [
+          {
+            "activity": "Copy_Store_Sales",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

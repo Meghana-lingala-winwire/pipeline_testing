@@ -1,0 +1,118 @@
+{
+  "name": "pl_master_daily",
+  "properties": {
+    "description": "Daily orchestration for Contoso Retail analytics. SLA: gold and Power BI refreshed by 06:30 IST.",
+    "parameters": {
+      "load_date": {
+        "type": "string",
+        "defaultValue": "@formatDateTime(adddays(utcnow(), -1), 'yyyy-MM-dd')"
+      }
+    },
+    "activities": [
+      {
+        "name": "Run_Ingest_ERP",
+        "type": "ExecutePipeline",
+        "typeProperties": {
+          "pipeline": {
+            "referenceName": "pl_ingest_erp",
+            "type": "PipelineReference"
+          },
+          "waitOnCompletion": true,
+          "parameters": {
+            "load_date": "@pipeline().parameters.load_date"
+          }
+        }
+      },
+      {
+        "name": "Run_Ingest_Stores",
+        "type": "ExecutePipeline",
+        "typeProperties": {
+          "pipeline": {
+            "referenceName": "pl_ingest_stores",
+            "type": "PipelineReference"
+          },
+          "waitOnCompletion": true,
+          "parameters": {
+            "load_date": "@pipeline().parameters.load_date"
+          }
+        }
+      },
+      {
+        "name": "Run_Transform",
+        "type": "ExecutePipeline",
+        "dependsOn": [
+          {
+            "activity": "Run_Ingest_ERP",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          },
+          {
+            "activity": "Run_Ingest_Stores",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "pipeline": {
+            "referenceName": "pl_transform",
+            "type": "PipelineReference"
+          },
+          "waitOnCompletion": true,
+          "parameters": {
+            "load_date": "@pipeline().parameters.load_date"
+          }
+        }
+      },
+      {
+        "name": "Refresh_PowerBI",
+        "type": "WebActivity",
+        "dependsOn": [
+          {
+            "activity": "Run_Transform",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "url": "https://api.powerbi.com/v1.0/myorg/groups/ws-retail-prod/datasets/retail-sales/refreshes",
+          "method": "POST",
+          "authentication": {
+            "type": "MSI",
+            "resource": "https://analysis.windows.net/powerbi/api"
+          }
+        }
+      },
+      {
+        "name": "Alert_On_Failure",
+        "type": "WebActivity",
+        "dependsOn": [
+          {
+            "activity": "Run_Transform",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          },
+          {
+            "activity": "Refresh_PowerBI",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "url": "@pipeline().globalParameters.teams_webhook_url",
+          "method": "POST",
+          "body": "{\"text\":\"pl_master_daily failed for @{pipeline().parameters.load_date}. On-call: data-platform-oncall\"}"
+        }
+      }
+    ],
+    "annotations": [
+      "owner: data-platform",
+      "support: L2 Retail Analytics Support",
+      "escalation: data-platform-oncall"
+    ]
+  }
+}

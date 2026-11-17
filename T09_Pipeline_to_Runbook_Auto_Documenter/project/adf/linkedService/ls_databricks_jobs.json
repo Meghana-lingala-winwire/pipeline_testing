@@ -1,0 +1,9 @@
+{
+  "name": "ls_databricks_jobs",
+  "properties": {
+    "type": "AzureDatabricks",
+    "workspace": "adb-retail-prod",
+    "cluster": "new job cluster: 15.4 LTS, Standard_D8ds_v5, 2-6 workers (autoscale)",
+    "auth": "Managed identity"
+  }
+}

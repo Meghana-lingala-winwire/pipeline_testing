@@ -1,0 +1,7 @@
+{
+  "name": "ds_sftp_store_sales",
+  "properties": {
+    "linkedService": "ls_sftp_stores",
+    "path": "/outbound/daily/store_sales_{yyyyMMdd}.csv"
+  }
+}

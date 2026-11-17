@@ -1,0 +1,9 @@
+{
+  "name": "ls_sftp_stores",
+  "properties": {
+    "type": "Sftp",
+    "host": "sftp.storepos-vendor.example",
+    "auth": "SSH key from Key Vault secret 'store-sftp-key'",
+    "note": "Vendor support: support@storepos-vendor.example, SLA file by 03:00 IST"
+  }
+}
